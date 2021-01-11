@@ -1,0 +1,54 @@
+---
+title: "SNR"
+author: "Fernanda Lopez G"
+date: "11/24/2020"
+output: html_document
+---
+
+#SNR boxplots
+```{r}
+library(readxl)
+library(tidyverse)
+library(forcats)
+datosSNR <- read_excel("SNR_calculados_versionGrandjean.xlsx", sheet = "SNR_valorFijo (2)")
+datosSNR$Session <- factor(datosSNR$Session)
+
+datosSNR %>% select(ACC, AON, BLA, BNST, LS, MeA, MOB, mPFC, NAcc, PVN, RSC, VP, VTA, DG, dHIP, vHIP) -> SNRs 
+```
+
+```{r}
+SNRs %>%
+pivot_longer(everything(), 
+             names_to = "ROI", 
+             values_to = "SNR") -> SNRp
+```
+
+
+
+```{r}
+SNRp %>%
+  ggplot(aes(x = ROI, y = SNR, fill = ROI)) +
+  geom_boxplot(outlier.shape = NA) +
+  ylim(0, 400) +
+  theme_minimal()
+```
+
+```{r}
+SNRp %>%
+  ggplot(aes(x = reorder(ROI, SNR, fUN = median, .asc =TRUE), y = SNR, fill = ROI)) +
+  geom_boxplot(outlier.shape = NA) +
+  ylim(0, 400) +
+  ylab("SNR\n") + 
+  xlab("\nRegions of interest") +
+  theme_minimal() + 
+  theme(axis.title.x = element_text(size=14), axis.title.y = element_text(size=14)) + 
+   theme(axis.text.y=element_text(size=11, hjust=0.2),  axis.text.x=element_text(size=10, hjust=0.5)) +
+  scale_fill_viridis(discrete=TRUE) + theme(legend.position = "none")
+
+ggsave(filename ="SNR_boxplot", height = 4, width = 9, device = "svg")
+```
+
+```{r}
+aov.snr <- aov(VP~1, data=SNRp)
+```
+
