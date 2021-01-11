@@ -1,0 +1,87 @@
+---
+title: "Final Project"
+author: "Ma Fernanda Lopez Gtz"
+date: "1/6/2021"
+output:   
+  html_document:
+    toc: yes
+    toc_depth: 3
+    number_sections: false
+    toc_float:
+      collapsed: false
+    cod_folding: hide
+    theme: cosmo
+  pdf_document: default
+---
+
+<style>
+body {
+text-align: justify}
+</style>
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+setwd("~/Library/Mobile Documents/com~apple~CloudDocs/Topillos/Doctorado/Clase_MetodosRegresion/R")
+```
+
+## Introduction
+
+The prairie vole (*Microtus ochrogaster*) is a rodent native of North America whose natural behavior involves pair bonding, which can be defined as a long-lasting, strong social relationship between individuals in a breeding pair in monogamous species. Pair bonded voles will usually display selective aggression towards unfamiliar conspecifics and biparental care. These behaviors make the prairie vole a valuable model to investigate behaviors associated with a socially monogamous reproductive strategy. Being comparable to human-like social interactions, studying the neurobiology of social behavior in the prairie vole may allow further understanding of human social bonding, its alterations in psychological disorders and overall impact in health.  
+<br>
+
+<center>
+![Adult male and female pair of prairie voles](/Users/MaFernanda/Library/Mobile\ Documents/com\~apple\~CloudDocs/Topillos/Doctorado/Clase_MetodosRegresion/R/Proyecto_Final/IMG_voles.png){#id .class width=40% height=40%}
+</center>
+
+<br>
+Several studies have shown that within a controlled environment, pair bonding will occur if sexually mature male and female voles mate for 6 hours or remain in cohabitation for at least 24 hours, a time period by which they tipically display changes in behavior as a result of bond formation. The most characteristic is the preference for the partner over a stranger vole, a behavior that can be evaluated in a test where the time spent with the partner is compared with the time spent with a stranger vole.    
+<br>
+
+### Background  
+
+  Other social and sexual behaviors have been previosly studied to understand their influence in pair-bonding. For example, the measurement of huddling, a behavior described as sitting or lying in bodily contact with a conspecific, has shown reliability in describing the level of sociability, and its expression can bias towards pair bond induction and formation. Further, in this rodent species, it has been reported that mating is not essential for partner preference, though it has shown to accelerate bonding; it's also been suggested that in male voles, mating may be more relevant for bond establishment than in female voles.  
+<br>
+  A considerable amount of evidence has shown that genetic and environmental factors create variability in the exhibition of social behavior in the prairie vole, which may ultimately impact the outcome of pair bond formation and maintenance. This variability has even been observed in subjects under the same experimental conditions, suggesting that multiple factors may be involved in the expression of socio-sexual behavior. The amount or particular timing of manifestation of socio-sexual behaviors may influence the expression of other behaviors and potentially impact pair bond formation and maintenance. 
+<br>
+
+  >Therefore, a model that analyzes multiple socio-sexual behaviors could be useful in understanding how they impact each other and how is their overall infuence over pair-bonding in male and female prairie voles.  
+  
+<br>  
+
+## Materials and Methods  
+
+### Animals  
+
+Thirty-two three-month-old sexually naïve female (N=16) and male (N=16) prairie voles (*Microtus ochrogaster*) were used in the study. The animals were housed in a temperature (23°C) and light (14:10 light-dark cycle) controlled room and provided with rabbit diet HF-5326 oat, sunflower seeds, and water ad libitum. These voles were previously weaned at 21 days, housed in same-sex cages, and were descendants of voles generously donated by Dr. Larry J. Young from his colony at Emory University. Fourteen days before the experimental protocol, female voles were bilaterally ovariectomized. After recovery, silastic capsules containing estradiol benzoate dissolved in corn oil (0.5 mg/mL of E2B) were implanted via s.c. to induce sexual receptivity four days before cohabitation protocol and remained implanted during the entire experimental protocol. Females in Microtus species are induced ovulators and do not show cyclic changes (Taylor et al., 1992), and for the purpose of this experiment, estrogen-in-oil capsule implantation allowed a stable and equal hormonal dose in all female subjects. The corresponding dose and procedure reliably induced sexual receptivity (Ingberg et al., 2012).  
+<br> 
+
+### Cohabitation and behavior analysis  
+
+Female and male voles unrelated to each other were randomly assigned as couples and placed for cohabitation in a new home cage with fresh bedding to promote ad libitum mating and social interaction. The first 6 hours of cohabitation were video recorded for subsequent analysis of social and mating behavior: mount, intromission and ejaculation latencies from male voles; lordosis latency from females; and huddling latencies for each male and female pair. In male voles, mount latency was scored if it straddled the female from behind with pelvic thrusting, a continued mount behavior with repetitive thrusting was scored as intromission latency, and ejaculation latency was scored if after intromission and deeper thrusting an evident period of male inactivity was followed. Lordosis latency was scored if the female vole adopted an immobile posture with concave back flexion, neck extension, elevation of the hindquarters, and tail deviation to facilitate male mounting and intromission. Some females displayed lordosis reflex as pre-mounting behavior and were scored for lordosis latency. Since the onset of behaviors such as grooming or licking involve social contact and may overlap with huddling (Burkett et al., 2016), in this study huddling latency was only scored if there was continuous, side to side bodily contact for at least 10 seconds. Once joined, voles were housed in couples for the remaining of the experiment and were only separated for behavioral tests.  
+<br> 
+
+#### Partner Preference Test  
+
+Subjects underwent a 3-hour partner preference test (PPT) to evaluate pair bond formation. This protocol was based on a previously described test (Williams et al., 1992) and was performed in custom built, 3-chambered clear plastic arenas divided by perforated clear plastic barriers that allowed visual, auditory and olfactory contact, but not physical interaction or mating behavior between subjects. In the central chamber, the vole being tested could roam freely, and time spent in the incentive areas at opposite sides of the chamber was recorded. The incentive areas were defined as the proximal space next to the chambers with its “partner” or with an opposite-sex, novel “stranger” vole. All stranger voles were unrelated to subjects in the test and had the same age and hormonal condition than the sexual partner. On each test, partner or stranger voles were randomly and alternately positioned on the opposite chambers of the arena. Each subject was tested only once in the PPT, either at 48 or 72h after the onset of cohabitation. If a vole had PPT (assigned randomly and alternately) at the 48h period, its partner was tested at the 72h period to enable rest between tests and avoid excessive stress. PPT data analysis was performed with UMATracker software (Yamanaka & Takeuchi, 2018), which allowed quantification of the proportion of time spent with each of the stimulus voles. A partner preference index was calculated for each subject, consisting of percentage of time spent on the area related to the partner divided by the percentage of time spent on both social incentive areas (time with partner plus time with stranger vole). Data in the study is presented as mean ± standard error of the mean unless otherwise noted. Partner preference was explored with one-tailed Mann Whitney U tests given that Shapiro-Wilk normality tests revealed such data was not normally distributed. Behavioral data was analyzed with GraphPad Prism 5 (GraphPad Software, La Jolla, California, USA).
+<br><br><br> 
+
+## Behavioral analysis results  
+<br>
+```{r include=FALSE}
+#Loading libraries
+library(dplyr)
+library(tidyverse)
+library(ggplot2)
+library(readxl)
+```
+
+
+
+#### Cohabitation
+
+Mount (M±SEM: 65.4±31.7 min), intromission (116±35.3 min), and ejaculation (125±34.4 min) latencies were obtained for male voles (N=16). Lordosis latency (22.3±13.3 min) was also measured on females (N=16), and huddling latencies (69.5±15.8 min) were obtained for each male and female pair. Three of the sixteen couples did not mate during the recorded period, but all voles displayed huddling and licking/grooming behavior with their sexual partner.  
+<br> 
+
+#### Partner Preference Test  
+
+Between 48 and 72 hours after the onset of cohabitation, partner preference was evaluated on each subject (N= 32) to assess pair-bonding behavior. A significant difference was found between the percentage of time spent on the incentive area related to the partner (median = 55.9 %) with the area related to the stranger vole  (median = 37.1 %) for all subjects (U = 378, p = 0.036, effect size r = 0.32). No significant differences were found between males and females in their preference for the partner (U = 121, p = 0.81, effect size r = 0.05) or the stranger voles (U = 118, p = 0.72, effect size r = 0.07), and there were also no significant differences in partner preference between the time periods when PPT tests were performed (48 and 72 hours) (U = 119, p = 0.75,  effect size r = 0.06).

@@ -1,0 +1,833 @@
+---
+title: "Mating_Topillos_data"
+author: "Fernanda"
+date: "9/29/2020"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Data visualization
+
+```{r}
+# Clear workspace
+rm(list = ls())
+# Set working directory (where this file is stored)
+```
+
+
+```{r}
+# Load 'rstudioapi' package
+if(!is.element("rstudioapi",row.names(installed.packages()))){
+  install.packages("rstudioapi")
+}
+library(rstudioapi)
+setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
+# Save graphical parameters
+op <- par()
+
+# Load 'ggplot2' package
+if(!is.element("ggplot2",row.names(installed.packages()))){
+  install.packages("ggplot2")
+}
+library(ggplot2)
+# Load 'scales' package
+if(!is.element("scales",row.names(installed.packages()))){
+  install.packages("scales")
+}
+library(scales)
+# Load 'svglite' package
+if(!is.element("svglite",row.names(installed.packages()))){
+  install.packages("svglite")
+}
+
+```
+
+```{r}
+library(ggplot2)
+library(scales)
+library(svglite)
+library(tidyverse)
+library(readxl)
+```
+
+##Define variables
+```{r}
+library(readxl)
+Mating_topillos_huddling_dataframe <- read_excel("Mating_topillos_huddling_dataframe.xlsx", col_types = c("text", "text", "text", "text", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric"))
+
+df_hud <- Mating_topillos_huddling_dataframe
+hud_lat_s01 <- df_hud[,5]
+Ls_mea <- df_hud %>%
+  select(1,3,7)
+  colnames(Ls_mea)[3] <-"FC"
+Acc_nacc <- df_hud %>%
+  select(1,3,8)
+  colnames(Acc_nacc)[3] <-"FC"
+Bla_nacc <- df_hud %>%
+  select(1,3,9)
+  colnames(Bla_nacc)[3] <-"FC"
+Bla_rsc  <- df_hud %>%
+  select(1,3,10)
+  colnames(Bla_rsc)[3] <-"FC"
+Pvn_rsc  <- df_hud %>%
+  select(1,3,11)
+  colnames(Pvn_rsc)[3] <-"FC"
+Mea_vp  <- df_hud %>%
+  select(1,3,12)
+  colnames(Mea_vp)[3] <-"FC"
+Ls_vta <- df_hud %>%
+  select(1,3,13)
+  colnames(Ls_vta)[3] <-"FC"
+Rsc_vta <- df_hud %>%
+  select(1,3,14)
+  colnames(Rsc_vta)[3] <-"FC"
+Bla_DG <- df_hud %>%
+  select(1,3,15)
+  colnames(Bla_DG)[3] <-"FC"
+
+```
+
+##Script de Zeus para boxplots
+
+```{r eval=FALSE, include=FALSE}
+# Read residuals
+datos <- read.csv("/Users/MaFernanda/Topillos/Mating_Topillos/PostHoc/FWE-posthoc_Ses_resid.csv")
+datos$Ses <- factor(datos$Ses)
+
+# Visualization
+g1 <- ggplot(data = datos,
+             mapping = aes(x = Ses, y = FC_ACC.LS)) +
+  geom_boxplot(outlier.shape = NA) +
+  #geom_jitter(shape=16, position=position_jitter(0.2)) +
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=1) +
+  geom_line(aes(group = id), size=.2, alpha=.5) +
+ #ggtitle(gsub("[.]","-",names(Ynet)[fwe_edges[fe]])) + 
+  ylab("FC (z)") + 
+  xlab("Session") +
+  theme_bw()
+#outfile <- paste0("bp_Ses_",gsub("[.]","_",names(Ynet)[fwe_edges[fe]]),".svg")
+#ggsave(outfile, height = 4, width = 4)
+```
+
+##Script de Zeus para correlaciones de conducta con huddling 
+```{r eval=FALSE, include=FALSE}
+# Huddling files
+hfiles <- c("../F&M_ACC-NAcc_NBS_FigCorr_Huddling.csv",
+            "../F&M_NAcc-BLA_NBS_FigCorr_Huddling.csv",
+            "../F&M_BLA-DG_NBS_FigCorr_Huddling.csv",
+            "../F&M_RSC-VTA_NBS_FigCorr_Huddling.csv",
+            "../F&M_MeA-VP_NBS_FigCorr_Huddling.csv")
+
+# Plot them in a loop
+for(gg in 1:length(hfiles)){
+  # Read .csv file
+  datos <- read.csv(hfiles[gg])
+  # Set sex and huddling
+  datos$Sex <- factor(is.na(datos$Females), labels = c("F","M"))
+  datos$huddling <- rowSums( cbind (datos$Females,datos$Males), na.rm=TRUE)
+  # Pearson's correlation
+  cortext <- cor.test(datos$Functional.Connectivity,datos$huddling)
+  
+  # Plot
+  titulo <- unlist(strsplit(hfiles[gg], "_"))[2]
+  ggplot(data = datos, mapping = aes(x = Functional.Connectivity, y = huddling)) +
+    geom_smooth(method="lm", color = "goldenrod1", fill = scales::alpha("goldenrod1", alpha = 0.2)) +
+    geom_point(mapping = aes(color = Sex)) + 
+    scale_color_manual(values=c("deeppink3", "darkcyan")) +
+    xlab("Functional connectivity") + ylab("Huddling latency (min)") + ggtitle(titulo) +
+    annotate("text", x = 0.7*max(datos$Functional.Connectivity), y = 0.9*max(datos$huddling),
+             label = paste0("r(",cortext$parameter,")=",round(cortext$estimate,3))) +
+    theme_classic()
+  ggsave(filename = paste0("huddling_",titulo,".svg"), width = 5, height = 4)
+}
+```
+
+Intento de hacerlo loop
+
+```{r eval=FALSE, include=FALSE}
+hud_list <- c(Ls_mea, Acc_nacc, Bla_nacc, Bla_rsc, Pvn_rsc, Mea_vp, Ls_vta, Rsc_vta, Bla_DG)
+for(gg in 1:length(hud_list)){
+  datos <- (hud_list[gg])
+  # Pearson's correlation
+  cortext <- cor.test(datos$FC,hud_lat_s01$Huddling_lat)
+
+  # Plot
+  titulo <- unlist((hud_list[gg]))
+  ggplot(data = datos, mapping = aes(x = FC, y = hud_lat_s01$Huddling_lat)) +
+    geom_smooth(method="lm", color = "goldenrod1", fill = scales::alpha("goldenrod1", alpha = 0.2)) +
+    geom_point(mapping = aes(color = Sex)) + 
+    scale_color_manual(values=c("deeppink3", "darkcyan")) +
+    xlab("Functional connectivity") + ylab("Huddling latency (min)") + ggtitle(titulo) +
+    annotate("text", x = 0.7*max(datos$FC), y = 0.9*max(hud_lat_s01$Huddling_lat),
+             label = paste0("r(",cortext$parameter,")=",round(cortext$estimate,3))) +
+    theme_classic()
+  ggsave(filename = paste0("huddling_",titulo,".svg"), width = 5, height = 5)
+}
+```
+
+
+#USADOS EN RESPUESTA
+
+##Plot de LS-MeA adaptado de script de Zeus
+```{r}
+# Pearson's correlation
+cortext <- cor.test(Ls_mea$FC,hud_lat_s01$Huddling_lat)
+colnames(Ls_mea)[3] <-"FC"
+  # Plot
+  ggplot(data = Ls_mea, mapping = aes(x = FC, y = hud_lat_s01$Huddling_lat)) +
+    geom_smooth(method="lm", color = "goldenrod1", fill = scales::alpha("goldenrod1", alpha = 0.2)) +
+    geom_point(mapping = aes(color = Sex), size = 2.5) + 
+    #ylim(0, 300) +
+    #xlim(-0.25, 0.25) +
+    scale_color_manual(values=c("deeppink3", "darkcyan")) +
+    ggtitle("LS-MeA") +
+    #xlab("Functional connectivity") + ylab("Huddling latency (min)") +  +
+    #annotate("text", x = 0.7*max(Acc_nacc$FC), y = 0.9*max(hud_lat_s01$Huddling_lat)) +
+             #label = paste0("r(",cortext$parameter,")=",round(cortext$estimate,3))) +
+    #theme_set(hud_theme)
+    theme_classic()
+  ggsave(filename = paste0("huddling_","LS-MeA",".svg"), width = 5, height = 4)
+  
+  View(cortext)
+```
+
+###ACC-NAcc
+```{r}
+  # Pearson's correlation
+cortext <- cor.test(Acc_nacc$FC,hud_lat_s01$Huddling_lat)
+colnames(Acc_nacc)[3] <-"FC"
+  # Plot
+  ggplot(data = Acc_nacc, mapping = aes(x = FC, y = hud_lat_s01$Huddling_lat)) +
+    geom_smooth(method="lm", color = "goldenrod1", fill = scales::alpha("goldenrod1", alpha = 0.2)) +
+    geom_point(mapping = aes(color = Sex), size = 2.5) + 
+    #ylim(0, 300) +
+    #xlim(-0.25, 0.25) +
+    scale_color_manual(values=c("deeppink3", "darkcyan")) +
+    xlab("Functional connectivity") + ylab("Huddling latency (min)") +
+    ggtitle("ACC-NAcc") +
+    #annotate("text", x = 0.7*max(Acc_nacc$FC), y = 0.9*max(hud_lat_s01$Huddling_lat)) +
+             #label = paste0("r(",cortext$parameter,")=",round(cortext$estimate,3))) +
+    #theme_set(hud_theme)
+    theme_classic()
+  ggsave(filename = paste0("huddling_","ACC-NAcc",".svg"), width = 5, height = 4)
+  
+  View(cortext)
+```
+
+###BLA-NAcc
+```{r}
+  # Pearson's correlation
+cortext <- cor.test(Bla_nacc$FC,hud_lat_s01$Huddling_lat)
+colnames(Bla_nacc)[3] <-"FC"
+  # Plot
+  ggplot(data = Bla_nacc, mapping = aes(x = FC, y = hud_lat_s01$Huddling_lat)) +
+    geom_smooth(method="lm", color = "goldenrod1", fill = scales::alpha("goldenrod1", alpha = 0.2)) +
+    geom_point(mapping = aes(color = Sex), size = 2.5) + 
+    #ylim(0, 300) +
+    #xlim(-0.25, 0.25) +
+    scale_color_manual(values=c("deeppink3", "darkcyan")) +
+    xlab("Functional connectivity") + ylab("Huddling latency (min)") +
+    ggtitle("BLA-NAcc") +
+    #annotate("text", x = 0.7*max(Acc_nacc$FC), y = 0.9*max(hud_lat_s01$Huddling_lat)) +
+             #label = paste0("r(",cortext$parameter,")=",round(cortext$estimate,3))) +
+    #theme_set(hud_theme)
+    theme_classic()
+  ggsave(filename = paste0("huddling_","BLA-NAcc",".svg"), width = 5, height = 4)
+  
+  View(cortext)
+```
+
+
+###BLA-RSC
+```{r}
+  # Pearson's correlation
+cortext <- cor.test(Bla_rsc$FC,hud_lat_s01$Huddling_lat)
+colnames(Bla_rsc)[3] <-"FC"
+  # Plot
+  ggplot(data = Bla_rsc, mapping = aes(x = FC, y = hud_lat_s01$Huddling_lat)) +
+    geom_smooth(method="lm", color = "goldenrod1", fill = scales::alpha("goldenrod1", alpha = 0.2)) +
+    geom_point(mapping = aes(color = Sex), size = 2.5) + 
+    #ylim(0, 300) +
+    #xlim(-0.25, 0.25) +
+    scale_color_manual(values=c("deeppink3", "darkcyan")) +
+    #xlab("Functional connectivity") + ylab("Huddling latency (min)") +
+    ggtitle("BLA-RSC") +
+    #annotate("text", x = 0.7*max(Acc_nacc$FC), y = 0.9*max(hud_lat_s01$Huddling_lat)) +
+             #label = paste0("r(",cortext$parameter,")=",round(cortext$estimate,3))) +
+    #theme_set(hud_theme)
+    theme_classic()
+  ggsave(filename = paste0("huddling_","BLA-RSC",".svg"), width = 5, height = 4)
+  
+  View(cortext)
+```
+
+###PVN-RSC
+```{r}
+ # Pearson's correlation
+cortext <- cor.test(Pvn_rsc$FC,hud_lat_s01$Huddling_lat)
+colnames(Pvn_rsc)[3] <-"FC"
+  # Plot
+  ggplot(data = Pvn_rsc, mapping = aes(x = FC, y = hud_lat_s01$Huddling_lat)) +
+    geom_smooth(method="lm", color = "goldenrod1", fill = scales::alpha("goldenrod1", alpha = 0.2)) +
+    geom_point(mapping = aes(color = Sex), size = 2.5) + 
+    #ylim(0, 300) +
+    #xlim(-0.25, 0.25) +
+    scale_color_manual(values=c("deeppink3", "darkcyan")) +
+    #xlab("Functional connectivity") + ylab("Huddling latency (min)") +
+    ggtitle("PVN-RSC") +
+    #annotate("text", x = 0.7*max(Acc_nacc$FC), y = 0.9*max(hud_lat_s01$Huddling_lat)) +
+             #label = paste0("r(",cortext$parameter,")=",round(cortext$estimate,3))) +
+    #theme_set(hud_theme)
+    theme_classic()
+  ggsave(filename = paste0("huddling_","PVN-RSC",".svg"), width = 5, height = 4)
+  
+  View(cortext)
+```
+
+###MeA-VP
+```{r}
+# Pearson's correlation
+cortext <- cor.test(Mea_vp$FC,hud_lat_s01$Huddling_lat)
+colnames(Mea_vp)[3] <-"FC"
+  # Plot
+  ggplot(data = Mea_vp, mapping = aes(x = FC, y = hud_lat_s01$Huddling_lat)) +
+    geom_smooth(method="lm", color = "goldenrod1", fill = scales::alpha("goldenrod1", alpha = 0.2)) +
+    geom_point(mapping = aes(color = Sex), size = 2.5) + 
+    #ylim(0, 300) +
+    #xlim(-0.25, 0.25) +
+    scale_color_manual(values=c("deeppink3", "darkcyan")) +
+    #xlab("Functional connectivity") + ylab("Huddling latency (min)") +
+    ggtitle("MeA-VP") +
+    #annotate("text", x = 0.7*max(Acc_nacc$FC), y = 0.9*max(hud_lat_s01$Huddling_lat)) +
+             #label = paste0("r(",cortext$parameter,")=",round(cortext$estimate,3))) +
+    #theme_set(hud_theme)
+    theme_classic()
+  ggsave(filename = paste0("huddling_","MeA-VP",".svg"), width = 5, height = 4)
+  
+   View(cortext)
+```
+
+
+###LS-VTA
+```{r}
+# Pearson's correlation
+cortext <- cor.test(Ls_vta$FC,hud_lat_s01$Huddling_lat)
+colnames(Ls_vta)[3] <-"FC"
+  # Plot
+  ggplot(data = Ls_vta, mapping = aes(x = FC, y = hud_lat_s01$Huddling_lat)) +
+    geom_smooth(method="lm", color = "goldenrod1", fill = scales::alpha("goldenrod1", alpha = 0.2)) +
+    geom_point(mapping = aes(color = Sex), size = 2.5) + 
+    #ylim(0, 300) +
+    #xlim(-0.25, 0.25) +
+    scale_color_manual(values=c("deeppink3", "darkcyan")) +
+    #xlab("Functional connectivity") + ylab("Huddling latency (min)") +
+    ggtitle("LS-VTA") +
+    #annotate("text", x = 0.7*max(Acc_nacc$FC), y = 0.9*max(hud_lat_s01$Huddling_lat)) +
+             #label = paste0("r(",cortext$parameter,")=",round(cortext$estimate,3))) +
+    #theme_set(hud_theme)
+    theme_classic()
+  ggsave(filename = paste0("huddling_","LS-VTA",".svg"), width = 5, height = 4)
+  
+  View(cortext)
+```
+
+
+###RSC-VTA
+```{r}
+# Pearson's correlation
+cortext <- cor.test(Rsc_vta$FC,hud_lat_s01$Huddling_lat)
+colnames(Rsc_vta)[3] <-"FC"
+  # Plot
+  ggplot(data = Rsc_vta, mapping = aes(x = FC, y = hud_lat_s01$Huddling_lat)) +
+    geom_smooth(method="lm", color = "goldenrod1", fill = scales::alpha("goldenrod1", alpha = 0.2)) +
+    geom_point(mapping = aes(color = Sex), size = 2.5) + 
+    #ylim(0, 300) +
+    #xlim(-0.25, 0.25) +
+    scale_color_manual(values=c("deeppink3", "darkcyan")) +
+    #xlab("Functional connectivity") + ylab("Huddling latency (min)") +
+    ggtitle("RSC-VTA") +
+    #annotate("text", x = 0.7*max(Acc_nacc$FC), y = 0.9*max(hud_lat_s01$Huddling_lat)) +
+             #label = paste0("r(",cortext$parameter,")=",round(cortext$estimate,3))) +
+    #theme_set(hud_theme)
+    theme_classic()
+  ggsave(filename = paste0("huddling_","RSC-VTA",".svg"), width = 5, height = 4)
+  View(cortext)
+```
+
+###BLA-DG
+```{r}
+# Pearson's correlation
+cortext <- cor.test(Bla_DG$FC,hud_lat_s01$Huddling_lat)
+colnames(Bla_DG)[3] <-"FC"
+  # Plot
+  ggplot(data = Bla_DG, mapping = aes(x = FC, y = hud_lat_s01$Huddling_lat)) +
+    geom_smooth(method="lm", color = "goldenrod1", fill = scales::alpha("goldenrod1", alpha = 0.2)) +
+    geom_point(mapping = aes(color = Sex), size = 2.5) + 
+    #ylim(0, 300) +
+    #xlim(-0.25, 0.25) +
+    scale_color_manual(values=c("deeppink3", "darkcyan")) +
+    #xlab("Functional connectivity") + ylab("Huddling latency (min)") +
+    ggtitle("BLA-DG") +
+    #annotate("text", x = 0.7*max(Acc_nacc$FC), y = 0.9*max(hud_lat_s01$Huddling_lat)) +
+             #label = paste0("r(",cortext$parameter,")=",round(cortext$estimate,3))) +
+    #theme_set(hud_theme)
+    theme_classic()
+  ggsave(filename = paste0("huddling_","BLA-DG",".svg"), width = 5, height = 4)
+  
+  View(cortext)
+```
+
+
+##Creacion de tema para huddling
+```{r}
+hud_theme <- theme_classic() +
+  theme(text = element_text(family = "Arial"), axis.line = element_line(colour = 'black', size = 1), panel.grid.major = element_blank(), panel.grid.minor = element_blank()) 
+  
+hud_theme$text
+hud_theme$axis.line
+```
+
+
+##Modificacion de script de Zeus boxplots
+```{r}
+datos <- read.csv("/Users/MaFernanda/Topillos/Mating_Topillos/PostHoc/FWE-posthoc_Ses_resid.csv")
+datos$Ses <- factor(datos$Ses)
+
+# Visualization
+ggplot(data = datos, mapping = aes(x = Ses, y = resid_ACC.LS)) +
+  geom_boxplot(outlier.shape = NA, notch = TRUE, notchwidth = 0.7) +
+  stat_boxplot(geom = "errorbar", width = 0.5) + 
+  geom_point(mapping = aes(color = Sex), size = 2.5, alpha=0.35) + 
+  geom_line(aes(group = id, color = Sex), size=.3, alpha=0.35) +
+  scale_color_manual(values=c("deeppink3", "darkcyan")) +
+ #ggtitle(gsub("[.]","-",names(Ynet)[fwe_edges[fe]])) + 
+  ylab("Functional Connectivity (residuals)") + 
+  xlab("Session") +
+  theme_bw() + theme(panel.border = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"))
+#outfile <- paste0("bp_Ses_",gsub("[.]","_",names(Ynet)[fwe_edges[fe]]),".svg")
+ggsave(filename ="ACC-LS_resid", height = 4, width = 4, device = "svg")
+
+```
+
+###Violin plots
+```{r}
+ggplot(data = datos, mapping = aes(x = Ses, y = resid_ACC.LS)) +
+  geom_violin(trim = TRUE, scale = "count", draw_quantiles = 0.5) +
+  geom_point(mapping = aes(color = Sex), size = 2.5, alpha=0.35) + 
+  geom_line(aes(group = id, color = Sex), size=.3, alpha=0.35) +
+  scale_color_manual(values=c("deeppink3", "darkcyan")) +
+ #ggtitle(gsub("[.]","-",names(Ynet)[fwe_edges[fe]])) + 
+  ylab("Functional Connectivity (residuals)") + 
+  xlab("Session") +
+  theme_bw() + theme(panel.border = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"))
+ggsave(filename ="ACC-LS_resid_v", height = 4, width = 4, device = "svg")
+```
+
+##Graficas Session
+
+```{r}
+library(readr)
+library(ggplot2)
+FWE_posthoc_onlySes_FC <- read_csv("PostHoc/only_session/FWE-posthoc_onlySes_FC.csv")
+datos <- FWE_posthoc_onlySes_FC
+datos$Ses <- factor(datos$Ses)
+
+```
+
+##Violin plots
+
+###ACC-LS
+```{r}
+ggplot(data = datos, mapping = aes(x = Ses, y = FC_ACC.LS)) +
+  geom_violin(trim = TRUE, scale = "count", draw_quantiles = 0.5) +
+  geom_point(mapping = aes(color = Sex), size = 2.5, alpha=0.35) + 
+  geom_line(aes(group = id, color = Sex), size=.3, alpha=0.35) +
+  scale_color_manual(values=c("deeppink3", "darkcyan")) +
+ #ggtitle(gsub("[.]","-",names(Ynet)[fwe_edges[fe]])) + 
+  ylab("Functional Connectivity") + 
+  xlab("Session") +
+  theme_bw() + theme(panel.border = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"))
+ggsave(filename ="ACC-LS_FC_v", height = 4, width = 4, device = "svg")
+```
+###LS-mPFC
+```{r}
+ggplot(data = datos, mapping = aes(x = Ses, y = FC_LS.mPFC)) +
+  geom_violin(trim = TRUE, scale = "count", draw_quantiles = 0.5) +
+  geom_point(mapping = aes(color = Sex), size = 2.5, alpha=0.35) + 
+  geom_line(aes(group = id, color = Sex), size=.3, alpha=0.35) +
+  scale_color_manual(values=c("deeppink3", "darkcyan")) +
+ #ggtitle(gsub("[.]","-",names(Ynet)[fwe_edges[fe]])) + 
+  ylab("Functional Connectivity") + 
+  xlab("Session") +
+  theme_bw() + theme(panel.border = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"))
+ggsave(filename ="LS-mPFC_FC_v", height = 4, width = 4, device = "svg")
+```
+
+###BLA-NAcc
+```{r}
+ggplot(data = datos, mapping = aes(x = Ses, y = FC_BLA.NAcc)) +
+  geom_violin(trim = TRUE, scale = "count", draw_quantiles = 0.5) +
+  geom_point(mapping = aes(color = Sex), size = 2.5, alpha=0.35) + 
+  geom_line(aes(group = id, color = Sex), size=.3, alpha=0.35) +
+  scale_color_manual(values=c("deeppink3", "darkcyan")) +
+ #ggtitle(gsub("[.]","-",names(Ynet)[fwe_edges[fe]])) + 
+  ylab("Functional Connectivity") + 
+  xlab("Session") +
+  theme_bw() + theme(panel.border = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"))
+ggsave(filename ="BLA-NAcc_FC_v", height = 4, width = 4, device = "svg")
+```
+
+
+###LS-RSC
+```{r}
+ggplot(data = datos, mapping = aes(x = Ses, y = FC_LS.RSC)) +
+  geom_violin(trim = TRUE, scale = "count", draw_quantiles = 0.5) +
+  geom_point(mapping = aes(color = Sex), size = 2.5, alpha=0.35) + 
+  geom_line(aes(group = id, color = Sex), size=.3, alpha=0.35) +
+  scale_color_manual(values=c("deeppink3", "darkcyan")) +
+ #ggtitle(gsub("[.]","-",names(Ynet)[fwe_edges[fe]])) + 
+  ylab("Functional Connectivity") + 
+  xlab("Session") +
+  theme_bw() + theme(panel.border = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"))
+ggsave(filename ="LS-RSC_FC_v", height = 4, width = 4, device = "svg")
+```
+
+###LS-VP
+```{r}
+ggplot(data = datos, mapping = aes(x = Ses, y = FC_LS.VP)) +
+  geom_violin(trim = TRUE, scale = "count", draw_quantiles = 0.5) +
+  geom_point(mapping = aes(color = Sex), size = 2.5, alpha=0.35) + 
+  geom_line(aes(group = id, color = Sex), size=.3, alpha=0.35) +
+  scale_color_manual(values=c("deeppink3", "darkcyan")) +
+ #ggtitle(gsub("[.]","-",names(Ynet)[fwe_edges[fe]])) + 
+  ylab("Functional Connectivity") + 
+  xlab("Session") +
+  theme_bw() + theme(panel.border = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"))
+ggsave(filename ="LS-VP_FC_v", height = 4, width = 4, device = "svg")
+```
+
+###NAcc-VTA
+```{r}
+ggplot(data = datos, mapping = aes(x = Ses, y = FC_NAcc.VTA)) +
+  geom_violin(trim = TRUE, scale = "count", draw_quantiles = 0.5) +
+  geom_point(mapping = aes(color = Sex), size = 2.5, alpha=0.35) + 
+  geom_line(aes(group = id, color = Sex), size=.3, alpha=0.35) +
+  scale_color_manual(values=c("deeppink3", "darkcyan")) +
+ #ggtitle(gsub("[.]","-",names(Ynet)[fwe_edges[fe]])) + 
+  ylab("Functional Connectivity") + 
+  xlab("Session") +
+  theme_bw() + theme(panel.border = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"))
+ggsave(filename ="NAcc-VTA_FC_v", height = 4, width = 4, device = "svg")
+```
+###VP-VTA
+```{r}
+ggplot(data = datos, mapping = aes(x = Ses, y = FC_VP.VTA)) +
+  geom_violin(trim = TRUE, scale = "count", draw_quantiles = 0.5) +
+  geom_point(mapping = aes(color = Sex), size = 2.5, alpha=0.35) + 
+  geom_line(aes(group = id, color = Sex), size=.3, alpha=0.35) +
+  scale_color_manual(values=c("deeppink3", "darkcyan")) +
+ #ggtitle(gsub("[.]","-",names(Ynet)[fwe_edges[fe]])) + 
+  ylab("Functional Connectivity") + 
+  xlab("Session") +
+  theme_bw() + theme(panel.border = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"))
+ggsave(filename ="VP-VTA_FC_v", height = 4, width = 4, device = "svg")
+```
+
+###LS-dHIP
+```{r}
+ggplot(data = datos, mapping = aes(x = Ses, y = FC_LS.HipD)) +
+  geom_violin(trim = TRUE, scale = "count", draw_quantiles = 0.5) +
+  geom_point(mapping = aes(color = Sex), size = 2.5, alpha=0.35) + 
+  geom_line(aes(group = id, color = Sex), size=.3, alpha=0.35) +
+  scale_color_manual(values=c("deeppink3", "darkcyan")) +
+ #ggtitle(gsub("[.]","-",names(Ynet)[fwe_edges[fe]])) + 
+  ylab("Functional Connectivity") + 
+  xlab("Session") +
+  theme_bw() + theme(panel.border = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"))
+ggsave(filename ="LS-dHIP_FC_v", height = 4, width = 4, device = "svg")
+```
+
+###mPFC-dHIP
+```{r}
+ggplot(data = datos, mapping = aes(x = Ses, y = FC_mPFC.HipD)) +
+  geom_violin(trim = TRUE, scale = "count", draw_quantiles = 0.5) +
+  geom_point(mapping = aes(color = Sex), size = 2.5, alpha=0.35) + 
+  geom_line(aes(group = id, color = Sex), size=.3, alpha=0.35) +
+  scale_color_manual(values=c("deeppink3", "darkcyan")) +
+ #ggtitle(gsub("[.]","-",names(Ynet)[fwe_edges[fe]])) + 
+  ylab("Functional Connectivity") + 
+  xlab("Session") +
+  theme_bw() + theme(panel.border = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"))
+ggsave(filename ="mPFC-dHIP_FC_v", height = 4, width = 4, device = "svg")
+```
+
+###ACC-vHIP
+```{r}
+ggplot(data = datos, mapping = aes(x = Ses, y = FC_ACC.HipV)) +
+  geom_violin(trim = TRUE, scale = "count", draw_quantiles = 0.5) +
+  geom_point(mapping = aes(color = Sex), size = 2.5, alpha=0.35) + 
+  geom_line(aes(group = id, color = Sex), size=.3, alpha=0.35) +
+  scale_color_manual(values=c("deeppink3", "darkcyan")) +
+ #ggtitle(gsub("[.]","-",names(Ynet)[fwe_edges[fe]])) + 
+  ylab("Functional Connectivity") + 
+  xlab("Session") +
+  theme_bw() + theme(panel.border = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"))
+ggsave(filename ="ACC-vHIP_FC_v", height = 4, width = 4, device = "svg")
+```
+
+
+## DATOS DE PREFERENCIA DE PAREJA (CORRELACIÓN)
+
+###LS-VP
+```{r}
+#Cargar datos
+partnerpref_s01 <- read_excel("Mating_topillos_partnerpref_dataframe.xlsx", sheet = "s01")
+
+# Pearson's correlation
+cortexts01 <- cor.test(partnerpref_s01$FC_LS.VP, partnerpref_s01$Index_demeaned)
+colnames(partnerpref_s01)[7] <-"FC"
+  # Plot
+  ggplot(data = partnerpref_s01, mapping = aes(x = FC, y = Index_Pref)) +
+    geom_smooth(method="lm", color = "darkolivegreen3", fill = scales::alpha("darkolivegreen3", alpha = 0.2)) +
+    geom_point(mapping = aes(color = Sex), size = 2.5) + 
+    #ylim(0, 300) +
+    #xlim(-0.25, 0.25) +
+    scale_color_manual(values=c("deeppink3", "darkcyan")) +
+    ylim(0.0, 1.0) +
+    #xlab("Functional connectivity") + ylab("Huddling latency (min)") +
+    ggtitle("LS-VP") +
+    #annotate("text", x = 0.7*max(Acc_nacc$FC), y = 0.9*max(hud_lat_s01$Huddling_lat)) +
+             #label = paste0("r(",cortext$parameter,")=",round(cortext$estimate,3))) +
+    #theme_set(hud_theme)
+    theme_classic()
+  ggsave(filename = paste0("corrpref_","LS-VP",".svg"), width = 5, height = 4)
+  
+  #View(cortext)
+```
+
+###BLA-NAcc
+```{r}
+#Cargar datos
+partnerpref_s02 <- read_excel("Mating_topillos_partnerpref_dataframe.xlsx", sheet = "s02")
+
+# Pearson's correlation
+cortexts02 <- cor.test(partnerpref_s02$FC_BLA.NAcc, partnerpref_s02$Index_demeaned)
+colnames(partnerpref_s02)[7] <-"FC"
+  # Plot
+  ggplot(data = partnerpref_s02, mapping = aes(x = FC, y = Index_Pref)) +
+    geom_smooth(method="lm", color = "darkolivegreen3", fill = scales::alpha("darkolivegreen3", alpha = 0.2)) +
+    geom_point(mapping = aes(color = Sex), size = 2.5) + 
+    #ylim(0, 300) +
+    #xlim(-0.25, 0.25) +
+    scale_color_manual(values=c("deeppink3", "darkcyan")) +
+    #xlab("Functional connectivity") + ylab("Huddling latency (min)") +
+    ylim(0.0, 1.0) +
+    ggtitle("BLA-NAcc") +
+    #annotate("text", x = 0.7*max(Acc_nacc$FC), y = 0.9*max(hud_lat_s01$Huddling_lat)) +
+             #label = paste0("r(",cortext$parameter,")=",round(cortext$estimate,3))) +
+    #theme_set(hud_theme)
+    theme_classic()
+  ggsave(filename = paste0("corrpref_","BLA-NAcc",".svg"), width = 5, height = 4)
+  
+  #View(cortext)
+```
+
+###LS-RSC
+```{r}
+#Cargar datos
+partnerpref_s03 <- read_excel("Mating_topillos_partnerpref_dataframe.xlsx", sheet = "s03")
+
+# Pearson's correlation
+cortexts03 <- cor.test(partnerpref_s03$FC_LS.RSC, partnerpref_s03$Index_demeaned)
+colnames(partnerpref_s03)[7] <-"FC"
+  # Plot
+  ggplot(data = partnerpref_s03, mapping = aes(x = FC, y = Index_Pref)) +
+    geom_smooth(method="lm", color = "darkolivegreen3", fill = scales::alpha("darkolivegreen3", alpha = 0.2)) +
+    geom_point(mapping = aes(color = Sex), size = 2.5) + 
+    #ylim(0, 300) +
+    #xlim(-0.25, 0.25) +
+    scale_color_manual(values=c("deeppink3", "darkcyan")) +
+    #xlab("Functional connectivity") + ylab("Huddling latency (min)") +
+    ylim(0.0, 1.0) +
+    ggtitle("LS-RSC") +
+    #annotate("text", x = 0.7*max(Acc_nacc$FC), y = 0.9*max(hud_lat_s01$Huddling_lat)) +
+             #label = paste0("r(",cortext$parameter,")=",round(cortext$estimate,3))) +
+    #theme_set(hud_theme)
+    theme_classic()
+  ggsave(filename = paste0("corrpref_","LS-RSC",".svg"), width = 5, height = 4)
+  
+  #View(cortext)
+```
+
+## DATOS DE SOCIAL TIME (CORRELACIÓN)
+
+###MeA-mPFC
+```{r}
+#Cargar datos
+Socialtime <- read_excel("Mating_topillos_socialtime_dataframe.xlsx")
+
+# Pearson's correlation
+cortexts01 <- cor.test(Socialtime$FC_MeA.mPFC, Socialtime$Socialtime_demeaned)
+#colnames(partnerpref_s03)[7] <-"FC"
+  # Plot
+  ggplot(data = Socialtime, mapping = aes(x = FC_MeA.mPFC, y = Percentage_socialtime)) +
+    geom_smooth(method="lm", color = "deepskyblue3", fill = scales::alpha("deepskyblue3", alpha = 0.2)) +
+    geom_point(mapping = aes(color = Sex), size = 2.5) + 
+    ylim(20, 100) +
+    #xlim(-0.25, 0.25) +
+    scale_color_manual(values=c("deeppink3", "darkcyan")) +
+    #xlab("Functional connectivity") + ylab("Huddling latency (min)") +
+    ggtitle("mPFC-MeA") +
+    #annotate("text", x = 0.7*max(Acc_nacc$FC), y = 0.9*max(hud_lat_s01$Huddling_lat)) +
+             #label = paste0("r(",cortext$parameter,")=",round(cortext$estimate,3))) +
+    #theme_set(hud_theme)
+    theme_classic()
+  ggsave(filename = paste0("socialtime_","mPFC-MeA",".svg"), width = 5, height = 4)
+  
+  #View(cortext)
+```
+
+###LS-NAcc
+```{r}
+
+#Cargar datos
+#Socialtime <- read_excel("Mating_topillos_socialtime_dataframe.xlsx")
+
+# Pearson's correlation
+cortexts02 <- cor.test(Socialtime$FC_LS.NAcc, Socialtime$Socialtime_demeaned)
+#colnames(partnerpref_s03)[7] <-"FC"
+  # Plot
+  ggplot(data = Socialtime, mapping = aes(x = FC_LS.NAcc, y = Percentage_socialtime)) +
+    geom_smooth(method="lm", color = "deepskyblue3", fill = scales::alpha("deepskyblue3", alpha = 0.2)) +
+    geom_point(mapping = aes(color = Sex), size = 2.5) + 
+    ylim(20, 100) +
+    #xlim(-0.25, 0.25) +
+    scale_color_manual(values=c("deeppink3", "darkcyan")) +
+    #xlab("Functional connectivity") + ylab("Huddling latency (min)") +
+    ggtitle("LS-NAcc") +
+    #annotate("text", x = 0.7*max(Acc_nacc$FC), y = 0.9*max(hud_lat_s01$Huddling_lat)) +
+             #label = paste0("r(",cortext$parameter,")=",round(cortext$estimate,3))) +
+    #theme_set(hud_theme)
+    theme_classic()
+  ggsave(filename = paste0("socialtime_","LS-NAcc",".svg"), width = 5, height = 4)
+  
+  #View(cortext)
+
+```
+
+###NAcc-mPFC
+```{r}
+
+#Cargar datos
+#Socialtime <- read_excel("Mating_topillos_socialtime_dataframe.xlsx")
+
+# Pearson's correlation
+cortexts03 <- cor.test(Socialtime$FC_mPFC.NAcc, Socialtime$Socialtime_demeaned)
+#colnames(partnerpref_s03)[7] <-"FC"
+  # Plot
+  ggplot(data = Socialtime, mapping = aes(x = FC_mPFC.NAcc, y = Percentage_socialtime)) +
+    geom_smooth(method="lm", color = "deepskyblue3", fill = scales::alpha("deepskyblue3", alpha = 0.2)) +
+    geom_point(mapping = aes(color = Sex), size = 2.5) + 
+    ylim(20, 100) +
+    #xlim(-0.25, 0.25) +
+    scale_color_manual(values=c("deeppink3", "darkcyan")) +
+    #xlab("Functional connectivity") + ylab("Huddling latency (min)") +
+    ggtitle("NAcc-mPFC") +
+    #annotate("text", x = 0.7*max(Acc_nacc$FC), y = 0.9*max(hud_lat_s01$Huddling_lat)) +
+             #label = paste0("r(",cortext$parameter,")=",round(cortext$estimate,3))) +
+    #theme_set(hud_theme)
+    theme_classic()
+  ggsave(filename = paste0("socialtime_","NAcc-mPFC",".svg"), width = 5, height = 4)
+  
+  #View(cortext)
+
+```
+
+###MeA-VP
+```{r}
+
+#Cargar datos
+#Socialtime <- read_excel("Mating_topillos_socialtime_dataframe.xlsx")
+
+# Pearson's correlation
+cortexts04 <- cor.test(Socialtime$FC_MeA.VP, Socialtime$Socialtime_demeaned)
+#colnames(partnerpref_s03)[7] <-"FC"
+  # Plot
+  ggplot(data = Socialtime, mapping = aes(x = FC_MeA.VP, y = Percentage_socialtime)) +
+    geom_smooth(method="lm", color = "deepskyblue3", fill = scales::alpha("deepskyblue3", alpha = 0.2)) +
+    geom_point(mapping = aes(color = Sex), size = 2.5) + 
+    ylim(20, 100) +
+    #xlim(-0.25, 0.25) +
+    scale_color_manual(values=c("deeppink3", "darkcyan")) +
+    #xlab("Functional connectivity") + ylab("Huddling latency (min)") +
+    ggtitle("MeA-VP") +
+    #annotate("text", x = 0.7*max(Acc_nacc$FC), y = 0.9*max(hud_lat_s01$Huddling_lat)) +
+             #label = paste0("r(",cortext$parameter,")=",round(cortext$estimate,3))) +
+    #theme_set(hud_theme)
+    theme_classic()
+  ggsave(filename = paste0("socialtime_","MeA-VP",".svg"), width = 5, height = 4)
+  
+  #View(cortext)
+
+```
+
+###VP-MOB
+```{r}
+
+#Cargar datos
+#Socialtime <- read_excel("Mating_topillos_socialtime_dataframe.xlsx")
+
+# Pearson's correlation
+cortexts05 <- cor.test(Socialtime$FC_MOB.VP, Socialtime$Socialtime_demeaned)
+#colnames(partnerpref_s03)[7] <-"FC"
+  # Plot
+  ggplot(data = Socialtime, mapping = aes(x = FC_MOB.VP , y = Percentage_socialtime)) +
+    geom_smooth(method="lm", color = "deepskyblue3", fill = scales::alpha("deepskyblue3", alpha = 0.2)) +
+    geom_point(mapping = aes(color = Sex), size = 2.5) + 
+    ylim(20, 100) +
+    #xlim(-0.25, 0.25) +
+    scale_color_manual(values=c("deeppink3", "darkcyan")) +
+    #xlab("Functional connectivity") + ylab("Huddling latency (min)") +
+    ggtitle("VP-MOB") +
+    #annotate("text", x = 0.7*max(Acc_nacc$FC), y = 0.9*max(hud_lat_s01$Huddling_lat)) +
+             #label = paste0("r(",cortext$parameter,")=",round(cortext$estimate,3))) +
+    #theme_set(hud_theme)
+    theme_classic()
+  ggsave(filename = paste0("socialtime_","VP-MOB",".svg"), width = 5, height = 4)
+  
+  #View(cortext)
+
+```
+
+###MOB-DG
+```{r}
+
+#Cargar datos
+#Socialtime <- read_excel("Mating_topillos_socialtime_dataframe.xlsx")
+
+# Pearson's correlation
+cortexts06 <- cor.test(Socialtime$FC_MOB.DG, Socialtime$Socialtime_demeaned)
+#colnames(partnerpref_s03)[7] <-"FC"
+  # Plot
+  ggplot(data = Socialtime, mapping = aes(x = FC_MOB.DG , y = Percentage_socialtime)) +
+    geom_smooth(method="lm", color = "deepskyblue3", fill = scales::alpha("deepskyblue3", alpha = 0.2)) +
+    geom_point(mapping = aes(color = Sex), size = 2.5) + 
+    ylim(20, 100) +
+    #xlim(-0.25, 0.25) +
+    scale_color_manual(values=c("deeppink3", "darkcyan")) +
+    #xlab("Functional connectivity") + ylab("Huddling latency (min)") +
+    ggtitle("MOB-DG") +
+    #annotate("text", x = 0.7*max(Acc_nacc$FC), y = 0.9*max(hud_lat_s01$Huddling_lat)) +
+             #label = paste0("r(",cortext$parameter,")=",round(cortext$estimate,3))) +
+    #theme_set(hud_theme)
+    theme_classic()
+  ggsave(filename = paste0("socialtime_","MOB-DG",".svg"), width = 5, height = 4)
+  
+  #View(cortext)
+
+```

@@ -1,0 +1,193 @@
+---
+title: "Mating_Topillos_Behavior"
+author: "Fernanda"
+date: "10/7/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Análisis Conductual
+
+Cargar libraries
+
+```{r}
+library(dplyr)
+#library(ggpubr)
+library(tidyr)
+library(ggplot2)
+```
+
+Cargar datos
+
+```{r}
+library(readxl)
+Mating_topillos_behavior_dataframe <- read_excel("Mating_topillos_behavior_dataframe.xlsx")
+#View(Mating_topillos_behavior_dataframe)
+```
+
+Fijar variables pareja
+
+```{r}
+Mating_topillos_behavior_dataframe %>%
+  select(Sex, Percent_partner) -> partner_b
+
+partner_b %>%
+  filter(Sex == "F") -> partner_fem
+
+partner_b %>%
+  filter(Sex == "M") -> partner_mal
+
+partner <- partner_b$Percent_partner
+
+```
+
+Fijar variables extraño
+
+```{r}
+Mating_topillos_behavior_dataframe %>%
+  select(Sex, Percent_stranger) -> stranger_b
+
+stranger_b %>%
+  filter(Sex == "F") -> stranger_fem
+
+stranger_b %>%
+  filter(Sex == "M") -> stranger_mal
+
+stranger <- stranger_b$Percent_stranger
+```
+
+Test de normalidad
+
+```{r}
+ggdensity(Mating_topillos_behavior_dataframe$Percent_partner, 
+          main = "Density Percent Partner",
+          xlab = "preference")
+shapiro.test(Mating_topillos_behavior_dataframe$Percent_partner)
+
+ggdensity(Mating_topillos_behavior_dataframe$Percent_stranger, 
+          main = "Density Percent Stranger",
+          xlab = "preference")
+shapiro.test(Mating_topillos_behavior_dataframe$Percent_stranger)
+```
+Test de Wilcoxon
+
+```{r}
+wilcox.test(partner, stranger, alternative ="greater")
+
+```
+Grafica
+
+```{r}
+ggplot(Mating_topillos_behavior_dataframe, aes(x=percent)) 
+```
+
+#Calculo de datos estadísticos para Social Time
+
+```{r}
+library(readxl)
+Behavior <- read_excel("Mating_topillos_behavior_dataframe.xlsx")
+summary(Behavior$Percent_Socialtime)
+std <- function(x) sd(x)/sqrt(length(x))
+std(Behavior$Percent_Socialtime)
+```
+
+#Correlación entre Social Time y Preferencia de pareja
+
+```{r}
+#test de normalidad
+shapiro.test(Behavior$Percent_Socialtime)
+```
+#Test de correlacion
+```{r}
+socialtimevspref_corr <- cor.test(Behavior$Percent_Socialtime, Behavior$PrefIndex, method= "spearman")
+
+Behavior %>%
+ggplot(data = Behavior, mapping = aes(x = Percent_Socialtime, y = PrefIndex)) +
+    geom_smooth(method="lm", color = "pink", fill = scales::alpha("pink", alpha = 0.3), size = 1) +
+    geom_point(mapping = aes(color = Sex), size = 2.5) + 
+    xlim(20, 100) +
+    ylim(0.0, 1.0) +
+    scale_color_manual(values=c("deeppink3", "darkcyan")) +
+    ggtitle("Relationship between Partner preference Index and Social Interaction") +
+  xlab("\nPercentage of time on social incentive areas") + ylab("Partner preference Index\n") +
+   theme(axis.text.y=element_text(size=12, hjust=0.2), axis.text.x=element_text(size=12, hjust=0.95)) +
+    #annotate("text", x = 0.7*max(Acc_nacc$FC), y = 0.9*max(hud_lat_s01$Huddling_lat)) +
+             #label = paste0("r(",cortext$parameter,")=",round(cortext$estimate,3))) +
+    #theme_set(hud_theme)
+    theme_classic()
+
+  ggsave(filename = paste0("corr_","SocTimevsIndPref",".svg"), width = 5, height = 4)
+```
+
+# Huddling correlaction social time
+
+```{r}
+socialtimevshuddling_corr <- cor.test(Behavior$Percent_Socialtime, Behavior$Huddling_lat, method= "spearman")
+
+Behavior %>%
+ggplot(data = Behavior, mapping = aes(x = Percent_Socialtime, y = Huddling_lat)) +
+    geom_smooth(method="lm", color = "plum3", fill = scales::alpha("plum3", alpha = 0.3)) +
+    geom_point(mapping = aes(color = Sex), size = 2.5) + 
+    scale_color_manual(values=c("deeppink3", "darkcyan")) +
+    #xlab("Functional connectivity") + ylab("Huddling latency (min)") +
+    ggtitle("Relationship between Huddling latency and Social interaction") +
+   xlab("\nPercentage of time on social incentive areas") + ylab("Huddling latency (min)\n") +
+  theme(axis.text.y=element_text(size=12, hjust=0.2), axis.text.x=element_text(size=12, hjust=0.95)) +
+    #annotate("text", x = 0.7*max(Acc_nacc$FC), y = 0.9*max(hud_lat_s01$Huddling_lat)) +
+             #label = paste0("r(",cortext$parameter,")=",round(cortext$estimate,3))) +
+    #theme_set(hud_theme)
+    theme_classic()
+
+ggsave(filename = paste0("corr_","SocTimevsHuddling",".svg"), width = 5, height = 4)
+```
+
+# Huddling correlation partner pref
+
+```{r}
+prefindxvshuddling_corr <- cor.test(Behavior$PrefIndex, Behavior$Huddling_lat, method= "spearman")
+
+Behavior %>%
+ggplot(data = Behavior, mapping = aes(x = Huddling_lat, y = PrefIndex)) +
+    geom_smooth(method="lm", color = "coral", fill = scales::alpha("coral", alpha = 0.3)) +
+    geom_point(mapping = aes(color = Sex), size = 2.5) + 
+    scale_color_manual(values=c("deeppink3", "darkcyan")) +
+    #xlab("Functional connectivity") + ylab("Huddling latency (min)") +
+    ggtitle("Relationship between Huddling latency and Partner preference Index") +
+  xlab("\nHuddling Latency (min)") + ylab("Partner preference Index\n") +
+  theme(axis.text.y=element_text(size=12, hjust=0.2), axis.text.x=element_text(size=12, hjust=0.95)) +
+    #annotate("text", x = 0.7*max(Acc_nacc$FC), y = 0.9*max(hud_lat_s01$Huddling_lat)) +
+             #label = paste0("r(",cortext$parameter,")=",round(cortext$estimate,3))) +
+    #theme_set(hud_theme)
+    theme_classic()
+
+ggsave(filename = paste0("corr_","PrefIndxvsHuddling",".svg"), width = 5, height = 4)
+```
+
+# Male vs Female partner preference Index
+
+```{r}
+
+#dataframe_ppt_malevsfemale <- read_csv("Library/Mobile Documents/com~apple~CloudDocs/Topillos/Datos_Maestria/R_MT/Mating_Topillos/dataframe_ppt_malevsfemale.csv")
+
+preffemvsmale <- cor.test(dataframe_ppt_malevsfemale$Male, dataframe_ppt_malevsfemale$Female, method= "spearman")
+
+Behavior %>%
+ggplot(data = dataframe_ppt_malevsfemale, mapping = aes(x = Male, y = Female)) +
+    geom_smooth(method="lm", color = "lightblue2", fill = scales::alpha("lightblue2", alpha = 0.3)) +
+    geom_point(size = 3, color = "royalblue4") + 
+    #xlab("Functional connectivity") + ylab("Huddling latency (min)") +
+    ggtitle("Relationship between Male and Female Partner preference Index") +
+  xlab("\nMale Partner preference Index") + ylab("Female Partner preference Index\n") +
+  theme(axis.text.y=element_text(size=12, hjust=0.2), axis.text.x=element_text(size=12, hjust=0.95)) +
+    #annotate("text", x = 0.7*max(Acc_nacc$FC), y = 0.9*max(hud_lat_s01$Huddling_lat)) +
+             #label = paste0("r(",cortext$parameter,")=",round(cortext$estimate,3))) +
+    #theme_set(hud_theme)
+    theme_classic()
+
+ggsave(filename = paste0("corr_","PrefMalevsFemale",".svg"), width = 5, height = 4)
+```
+
+
